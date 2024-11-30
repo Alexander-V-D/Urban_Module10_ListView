@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Urban_Module10_ListView</string>
+    <string name="name">Имя</string>
+    <string name="age">Возраст</string>
+    <string name="save">Сохранить</string>
+    <string name="exit">Exit</string>
+</resources>
