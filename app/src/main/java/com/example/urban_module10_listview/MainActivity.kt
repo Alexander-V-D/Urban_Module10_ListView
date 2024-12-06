@@ -10,8 +10,12 @@ import android.widget.EditText
 import android.widget.ListView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 
 class MainActivity : AppCompatActivity() {
+
+    lateinit var userViewModel: UserViewModel
 
     private lateinit var mainToolbar: Toolbar
 
@@ -25,6 +29,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        userViewModel = ViewModelProvider(this)[UserViewModel::class.java]
 
         mainToolbar = findViewById(R.id.mainToolbar)
         setSupportActionBar(mainToolbar)
@@ -42,14 +48,20 @@ class MainActivity : AppCompatActivity() {
         val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, users)
         usersLV.adapter = adapter
 
+        userViewModel.currentUsers.observe(this, Observer {
+            users.addAll(it!!)
+        })
+
         saveBTN.setOnClickListener {
             if (nameET.text.isNotEmpty() && ageET.text.isNotEmpty()) {
-                users.add(User(nameET.text.toString(), ageET.text.toString().toInt()))
+                userViewModel.currentUsers.value =
+                    userViewModel.users.also {
+                        it.add(User(nameET.text.toString(), ageET.text.toString().toInt()))
+                    }
                 adapter.notifyDataSetChanged()
                 nameET.text.clear()
                 ageET.text.clear()
-            }
-            else {
+            } else {
                 if (nameET.text.isEmpty()) nameET.error = "Введите значение"
                 if (ageET.text.isEmpty()) ageET.error = "Введите значение"
             }
@@ -59,8 +71,11 @@ class MainActivity : AppCompatActivity() {
             AdapterView.OnItemClickListener { _, _, position, _ ->
                 val user = adapter.getItem(position)
                 adapter.remove(user)
-                users.remove(user)
-        }
+                userViewModel.currentUsers.value =
+                    userViewModel.users.also {
+                        it.remove(user)
+                    }
+            }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
